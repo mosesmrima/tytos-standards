@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-mock-data.sh\"",
+            "timeout": 10
+          }
+        ],
+        "description": "Warn when mock/stub/fake data patterns are written to source files"
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-custom-auth.sh\"",
+            "timeout": 10
+          }
+        ],
+        "description": "Warn when non-Supabase auth packages (NextAuth, JWT, passport) are imported"
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-custom-components.sh\"",
+            "timeout": 10
+          }
+        ],
+        "description": "Warn when custom UI components are built from scratch instead of using HeroUI/shadcn"
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-seed-in-migration.sh\"",
+            "timeout": 10
+          }
+        ],
+        "description": "Warn when INSERT INTO statements appear in migration SQL files"
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review the work done in this session against Tytos team standards. Check: (1) Did you use Supabase Auth and NOT NextAuth/custom JWT/passport? (2) Did you use HeroUI or shadcn components and NOT build custom Button/Card/Modal/Input/Select/Dialog/Table from scratch? (3) Did you propagate errors properly and NOT return mock/stub/fake data as fallbacks? (4) Did you keep seed data out of migration files? If any violations are found, output {\"decision\": \"block\", \"reason\": \"description of violation\"}. If all standards were followed or no relevant code was written, output {\"decision\": \"approve\"}.",
+            "timeout": 15
+          }
+        ],
+        "description": "LLM verification that Tytos standards were followed before stopping"
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(npm install next-auth*)",
+      "Bash(npm install @auth/*)",
+      "Bash(npm install jsonwebtoken*)",
+      "Bash(npm install passport*)",
+      "Bash(npm install jose *)",
+      "Bash(bun add next-auth*)",
+      "Bash(bun add @auth/*)",
+      "Bash(bun add jsonwebtoken*)",
+      "Bash(bun add passport*)",
+      "Bash(bun add jose *)",
+      "Bash(pnpm add next-auth*)",
+      "Bash(pnpm add jsonwebtoken*)",
+      "Bash(pnpm add passport*)",
+      "Bash(yarn add next-auth*)",
+      "Bash(yarn add jsonwebtoken*)",
+      "Bash(yarn add passport*)"
+    ]
+  }
+}
